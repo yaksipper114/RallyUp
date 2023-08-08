@@ -55,7 +55,7 @@ var server = http.createServer(async function(req, res){
     for(const query in querys) {
       if(querys.hasOwnProperty(query)) {
         if(query == "prompt") {
-          document.getElementById("p1").innerHTML = await runCompletion(querys[query]);
+          console.log(await runCompletion(querys[query]));
         }
       }
     }
