@@ -13,6 +13,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 //
 
+
 //QUERY SEARCH
 function parseQuery(queryString) {
   var query = {};
@@ -25,20 +26,9 @@ function parseQuery(queryString) {
 }
 //
 
-
-async function runCompletion(prompt) {
-    const completion = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: prompt
-    });
-    return completion.data.choices[0].text;
-}
-
 //SERVER HANDLING
 var server = http.createServer(async function(req, res){
-  
   //req.method // GET POST HEAD
-
   let path = url.parse(req.url, true);
   let decoder = new StringDecoder("UTF-8");
   let buffer = "";
@@ -65,3 +55,11 @@ var server = http.createServer(async function(req, res){
   }
 });
 server.listen(8080);
+
+//DB CONNECTION
+var connection = require('./database');
+connection.connect(function(err){
+  if(err) throw err
+  console.log("Database Connected!")
+});
+//
