@@ -1,22 +1,265 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>CHATGPT</title>
-    <script src="index.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnostic Test</title>
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f6f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+  }
+  h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  p {
+    font-size: 16px;
+    color: #666; /* Devil lmaooo */
+    margin-bottom: 20px;
+  }
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #3897f0;
+    color: white;
+    transition: background-color 0.3s;
+  }
+  button:hover {
+    background-color: #546586;
+  }
+</style>
 </head>
+<body>
+<div class="container">
+  <div id="welcomeStatement">
+    <h1>Diagnostic Test</h1>
+    <p>Welcome to the diagnostic test. Please rate your agreement with each statement.</p>
+  </div>
 
-    <h1>No clue what the fuck im doing :)</h1>
+  <button id="startButton">Start</button>
+  <div id="questions" style="display: none;">
+    <h2 id="question">Statement</h2>
+    <input type="range" id="slider" min="1" max="5" value="3" step="1">
+    <p>Your Response: <span id="sliderValue">Neutral</span></p>
+    <button id="nextButton">Next</button>
+  </div>
+  <div id="results" style="display: none;">
+    <h2>Your Ratings</h2>
+    <div id="ratingsList"></div>
+    <button id="editButton">Take The Quiz Again</button>
+    <button id="submitButton">Submit</button>
+  </div>
+  <!-- Add the user information form after the "results" div -->
+<form id="userForm" style="display: none;">
 
-    <body>
-        <form action="/" onsubmit="runCompletion()">
-            <label>input:</label>
-            <input id="input" type="text" name="prompt" value="">
-            <button onclick="runCompletion()">submit</button>
-        </form>
-        <div class="chatGPT response">
-            <p id="p1"></p>
-        </div>
-    </body>
+  <h2>Thanks for taking the test! Submit your info to save...</h2>
+
+  <label for="first_name">First Name:</label>
+  <input type="text" id="first_name" name="first_name" required><br><br>
+
+  <label for="last_name">Last Name:</label>
+  <input type="text" id="last_name" name="last_name" required><br><br>
+
+  <label for="phone">Phone:</label>
+  <input type="tel" id="phone" name="phone" required><br><br>
+
+  <label for="email">Email:</label>
+  <input type="email" id="email" name="email" required><br><br>
+
+  <label for="zip_code">Zip Code:</label>
+  <input type="text" id="zip_code" name="zip_code" required><br><br>
+
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password" required><br><br>
+
+  <button type="submit">Submit User Information</button>
+  
+</form>
+
+</div>
+<script>
+  const startButton = document.getElementById("startButton");
+  const questionsDiv = document.getElementById("questions");
+  const resultsDiv = document.getElementById("results");
+  const questionText = document.getElementById("question");
+  const slider = document.getElementById("slider");
+  const sliderValueSpan = document.getElementById("sliderValue");
+  const nextButton = document.getElementById("nextButton");
+  const editButton = document.getElementById("editButton");
+  const ratingsList = document.getElementById("ratingsList");
+  const userForm = document.getElementById("userForm"); // Select the form element
+
+  const topicVariableNames = [
+  "gun_control_political_view",
+  "environment_political_view",
+  "racial_injustice_political_view",
+  "lgbtq_political_view",
+  "police_reform_political_view",
+  "mental_health_political_view",
+  "income_inequality_political_view",
+  "fake_news_political_view",
+  "education_political_view",
+  "overall_political_view"
+];
+
+  const topics = [
+    "Stricter Gun Control Measures", 
+    "Greater Environmental Preservation Efforts", 
+    "Equality and Justice for All Races", 
+    "Support for LGBTQ+ Rights", 
+    "Reform in Police Practices",
+    "Mental Health Support and Awareness",
+    "Reducing Income Inequality",
+    "Fighting Misinformation and Fake News",
+    "Increasing Education Spending", 
+    ];
+  const statements = [
+    "Strongly Disagree", 
+    "Disagree", 
+    "Neutral", 
+    "Agree", 
+    "Strongly Agree"
+  ];
+  let currentTopicIndex = 0;
+  let ratings = [];
+  let ratings_flat_num = [];
+  let runningTotal = 0;
+  startButton.addEventListener("click", function() {
+    startButton.style.display = "none";
+    questionsDiv.style.display = "block";
+    nextButton.style.display = "block"; // Show the Next button
+    showQuestion(currentTopicIndex);
+  });
+
+  nextButton.addEventListener("click", function() {
+    const response = statements[parseInt(slider.value) - 1];
+    const rating_num = parseInt(slider.value);
+    runningTotal+=rating_num;
+    ratings_flat_num[topicVariableNames[currentTopicIndex]] = rating_num;
+    ratings.push({ topic: topics[currentTopicIndex], response });
+    currentTopicIndex++;
+    if (currentTopicIndex < topics.length) {
+      showQuestion(currentTopicIndex);
+    } else {
+      questionsDiv.style.display = "none";
+      resultsDiv.style.display = "block";
+      displayResults();
+    }
+    slider.value = 3; // Reset the slider value
+    sliderValueSpan.textContent = "Neutral"; // Reset the displayed value
+  });
+
+  slider.addEventListener("input", function() {
+    const response = statements[parseInt(slider.value) - 1];
+    sliderValueSpan.textContent = response;
+  });
+
+  editButton.addEventListener("click", function() {
+    resultsDiv.style.display = "none";
+    questionsDiv.style.display = "block";
+    currentTopicIndex = 0;
+    ratings = [];
+    showQuestion(currentTopicIndex);
+  });
+  
+  submitButton.addEventListener("click", function() {
+    console.log("Click detected.");
+    // Create an arra1y to store the ratings data in a format that can be sent to the server
+    const ratingsData = ratings.map(rating => ({
+      topic: rating.topic,
+      response: rating.response
+    }));
+    
+    console.log(ratingsData);
+    submitButton.style.display = "none";
+    ratingsList.style.display = "none";
+  // Show the user form
+    userForm.style.display = "block";
+
+  });
+  
+
+  userForm.addEventListener("submit", function(event) {
+
+    let userInfo = {};
+    event.preventDefault(); // Prevent the form from submitting (for demonstration purposes)
+    // Your code to handle the form submission goes here
+
+    //NEED TO MAP NUETRAL/STRONG ETC. TO NUMBERS THEN APPEND THE KEY (TOPIC)/VALUE PAIR TO USER INFO
+    console.log(ratings_flat_num);
+
+    const userForm = document.getElementById("userForm");
+    userInfo.first_name = document.getElementById("first_name").value;
+    userInfo.last_name = document.getElementById("last_name").value;
+    userInfo.email = document.getElementById("email").value;
+    userInfo.phone = document.getElementById("phone").value;
+    userInfo.zip_code = document.getElementById("zip_code").value;
+    userInfo.password = document.getElementById("password").value;
+    userInfo.overall_political_view = Math.round(100 * runningTotal/9) / 100;
+    var MergedList = Object.assign({}, userInfo, ratings_flat_num);
+    console.log(userInfo);
+    console.log(MergedList);
+    // For demonstration purposes, hide the form after submission
+    userForm.style.display = "none";
+    
+    // You can add code to send the user's information to the server here
+    fetch("database.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(MergedList),
+    })
+      .then((response) => {
+        if (response.ok) {
+          // Data sent successfully
+          console.log("Data sent successfully");
+          // You can add further actions here if needed, like redirecting to a thank you page.
+        } else {
+          // Error handling
+          console.error("Error sending data");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+
+  });
+  
+
+  function showQuestion(index) {
+    questionText.textContent = `${topics[index]} Is Important To Me`;
+    sliderValueSpan.textContent = "Neutral";
+    slider.value = 3; // Reset slider to default value
+  }
+
+  function displayResults() {
+    ratingsList.innerHTML = "";
+    ratings.forEach(rating => {
+      const ratingItem = document.createElement("p");
+      ratingItem.textContent = `${rating.topic}:\n${rating.response}`;
+      ratingsList.appendChild(ratingItem);
+    });
+  }
+</script>
+</body>
 </html>

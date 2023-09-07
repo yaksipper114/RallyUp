@@ -5,6 +5,23 @@ const fs = require('fs');
 const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
 const util = require('util');
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const app = express();
+
+app.use(bodyParser.json()); // Parse JSON requests
+
+// Define a route to handle the ratings submission
+app.post('/submit-ratings', (req, res) => {
+  const ratingsData = req.body; // The ratings data sent from the front end
+  console.log('Received ratings data:', ratingsData);
+  
+  // Here, you can perform actions like storing the data in a database
+
+  res.status(200).json({ message: 'Ratings submitted successfully' });
+});
+
 
 //OPENAI CONFIG.
 const configuration = new Configuration({
@@ -40,8 +57,8 @@ var server = http.createServer(async function(req, res){
 
 
   if(req.method === "GET") {
-    res.writeHead(200, { "Content-Type": "text/html" });
-    fs.createReadStream("index.html", "UTF-8").pipe(res);
+    fs.createReadStream("./index.html", "UTF-8").pipe(res);
+
     for(const query in querys) {
       if(querys.hasOwnProperty(query)) {
         if(query == "prompt") {

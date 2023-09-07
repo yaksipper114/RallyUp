@@ -1,7 +1,12 @@
 <?php
-    $first_name = $_POST['first_name'];
-    $last_name = $_POST['last_name'];
-    $first_name = $_POST['first_name'];
-    $first_name = $_POST['first_name'];
-    $first_name = $_POST['first_name'];
+
+
+$connection = mysqli_connect("localhost", "root", "rootpassword", "rallyup_users");
+
+if(!$connection)
+    die("Could not connect".mysqli_connect_error());
+else
+    echo "Connection Established"
+
+
 ?>
