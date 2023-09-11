@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In</title>
+<style>
+  /* Sign-in Page CSS Styles */
+  body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f6f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+  }
+  h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 20px;
+  }
+  label {
+    font-size: 16px;
+    color: #333;
+  }
+  input[type="email"],
+  input[type="password"] {
+    width: 90%;
+    padding: 10px;
+    margin-bottom: 15px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  button {
+    padding: 10px 20px; 
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #3897f0;
+    color: white;
+    transition: background-color 0.3s;
+  }
+  button:hover {
+    background-color: #546586;
+  }
+  /* End of Sign-in Page CSS Styles */
+/* Red Alerts with Exclamation Mark Icons */
+.alert {
+  padding: 5px 10px;
+  background-color: #ff8888;
+  color: white;
+  border-radius: 3px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-align: left;
+  display: none;
+  position: relative; /* Required for positioning the icon */
+  padding-left: 30px; /* Space for the icon */
+}
+
+.alert-icon {
+  position: absolute;
+  left: 5px; /* Adjust the icon's position as needed */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background-color: red; /* Red color for the icon */
+  color: white;
+  font-size: 16px;
+  text-align: center;
+  border-radius: 50%;
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Sign In</h1>
+  <form id="signInForm">
+    <div class="alert" id="passwordAlert">
+      <span class="alert-icon">!  </span>
+      Check your password
+    </div>
+    <div class="alert" id="emailAlert">
+      <span class="alert-icon">!</span>
+        Check your email
+    </div>
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required><br><br>
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required><br><br>
+
+    <button type="submit" id="submitButton">Sign In</button>
+    
+  </form>
+  <p>Don't have an account? <a href="http://localhost:8080/create-account/" id="createAccountLink">Create an account</a></p>
+</div>
+
+<script>
+    const createAccountLink = document.getElementById("createAccountLink");
+    const submitButton = document.getElementById("submitButton");
+    const form = document.getElementById("signInForm");
+
+    let result;
+    createAccountLink.addEventListener("click", function(event) {
+        // Prevent the default behavior of the anchor link, which is to navigate to a new page.
+        event.preventDefault();
+
+        // Get the value of the "href" attribute to determine the destination URL.
+        const href = createAccountLink.getAttribute("href");
+
+        // Navigate to the destination URL programmatically.
+        window.location.href = href;
+    });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userEmail = document.getElementById("email").value;
+      const userPassword = document.getElementById("password").value;
+      const passwordAlertElement = document.getElementById("passwordAlert");
+      const emailAlertElement = document.getElementById("emailAlert");
+    
+      const loginInfo = {email: userEmail, password: userPassword};
+
+      let bodyReq = JSON.stringify(loginInfo);
+      reqJson = {
+        method: "POST",
+        body: bodyReq,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+      console.log(reqJson);
+      // You can add code to send the user's information to the server here
+      fetch("/login", req=reqJson)
+        .then((response) => {
+          if (response.ok) {
+            return response.json(); // Parse the response here
+          } else {
+            throw new Error('HTTP error: ' + response.status);
+            console.log("ERR")
+          }      
+        })
+        .then((data) => {
+          console.log(data);
+          if(data.message == "Check your password") {
+            passwordAlertElement.style.display = "block";
+            emailAlertElement.style.display = "none";
+          }
+          if(data.message == "Login successful") {
+              //get request for homepage
+              window.location.href = "/home?email=" + encodeURIComponent(userEmail);
+          }
+          if(data.message == "Check your email") {
+            emailAlertElement.style.display = "block";
+            passwordAlertElement.style.display = "none";
+          }
+
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+
+
+        
+    });
+      
+
+</script>
+
+</body>
+</html>
